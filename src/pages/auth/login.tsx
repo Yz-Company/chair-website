@@ -14,7 +14,7 @@ export default function Auth() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: "http://localhost:5173/dashboard",
+        emailRedirectTo: "https://chair-website-six.vercel.app/dashboard",
       },
     });
 
