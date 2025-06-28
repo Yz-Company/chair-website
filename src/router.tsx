@@ -6,6 +6,8 @@ import Dashboard from "./pages/dashboard";
 import { AuthProvider } from "./providers/AuthProvider";
 import OnboardingPage from "./pages/onboarding";
 import { DahsboardLayout } from "./pages/dashboard/layout";
+import AdminPage from "./pages/admin";
+import UserPage from "./pages/admin/user";
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +18,19 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: <Auth />,
+  },
+  {
+    path: "/admin",
+    children: [
+      {
+        index: true,
+        element: <AdminPage />,
+      },
+      {
+        path: ":userId",
+        element: <UserPage />,
+      },
+    ],
   },
   {
     path: "/",

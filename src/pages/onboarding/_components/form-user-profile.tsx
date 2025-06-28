@@ -13,8 +13,13 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "../../../utils/supabase";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import type { CardInstallmet } from "../models/card-installment";
 
-export default function FormUserProfile() {
+interface FormUserProfileProps {
+  installment: CardInstallmet;
+}
+
+export default function FormUserProfile({ installment }: FormUserProfileProps) {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -62,11 +67,28 @@ export default function FormUserProfile() {
         return;
       }
 
+      // Run create installments
+      const { error: ErrorFunction } = await supabase.rpc(
+        "insert_installments",
+        {
+          profileid: user.id,
+          quantity: installment.quantity,
+          value: installment.price,
+        }
+      );
+
+      if (ErrorFunction) {
+        console.log(ErrorFunction.message);
+        return;
+      }
+
       toast.success("Obrigado pela sua ajuda! 😊");
       navigate("/dashboard");
     } catch (error) {
       console.log(error);
       toast.error("Erro ao salvar. Tenta novamente mais tarde!");
+    } finally {
+      setLoading(false);
     }
   }
 
