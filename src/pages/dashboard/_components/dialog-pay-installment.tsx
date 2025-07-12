@@ -29,7 +29,7 @@ export default function DialogPayInstallmet({
   installment,
   disabled,
 }: DialogPayInstallmetProps) {
-  const PIX = "07884484390";
+  const PIX = "07925542000114";
   const [isCopy, setIsCopy] = useState(false);
 
   function handleCopyPix() {
@@ -129,6 +129,9 @@ export default function DialogPayInstallmet({
           <div className="space-y-2">
             <Label htmlFor="pix">Pix</Label>
             <Input id="pix" defaultValue={PIX} readOnly />
+            <span className="text-xs font-light text-gray-500">
+              Comunidade Evang. Sara Nossa Terra de Teresina - PI
+            </span>
           </div>
           <ImageUpload callback={uploadFile} imageUrl={installment.image_url} />
         </div>

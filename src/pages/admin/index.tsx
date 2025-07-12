@@ -4,6 +4,7 @@ import { supabase } from "../../utils/supabase";
 import { Loader } from "lucide-react";
 import UserProfile from "./_components/user-profile";
 import { useMeta } from "../../hooks/use-meta";
+import { Input } from "../../components/ui/input";
 
 export default function AdminPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -39,7 +40,10 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen w-full flex flex-col items-center px-4 py-8">
       <div className="space-y-4 w-full max-w-5xl">
-        <h1 className="font-semibold text-2xl">Usuários</h1>
+        <div className="flex flex-col sm:flex-row items-center justify-between">
+          <h1 className="font-semibold text-2xl">Usuários</h1>
+          <Input className="w-96" placeholder="Pesquisar..." />
+        </div>
         {goalData && (
           <>
             <div className="w-full flex flex-col gap-4 mb-8">
