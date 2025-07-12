@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Profile } from "../../models/profile";
 import { supabase } from "../../utils/supabase";
 import { Loader } from "lucide-react";
@@ -10,6 +10,7 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const { goalData, progressPercentage } = useMeta();
+  const [search, setSearch] = useState("");
 
   const getProfiles = async () => {
     const { error, data } = await supabase
@@ -30,6 +31,14 @@ export default function AdminPage() {
     getProfiles();
   }, []);
 
+  // Filtrar os perfis
+  const filteredProfiles = useMemo(() => {
+    return profiles.filter((user) => {
+      const username = user.username ?? "";
+      return username.toLowerCase().includes(search.toLowerCase());
+    });
+  }, [search, profiles]);
+
   if (loading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center">
@@ -42,7 +51,12 @@ export default function AdminPage() {
       <div className="space-y-4 w-full max-w-5xl">
         <div className="flex flex-col sm:flex-row items-center justify-between">
           <h1 className="font-semibold text-2xl">Usuários</h1>
-          <Input className="w-96" placeholder="Pesquisar..." />
+          <Input
+            className="w-96"
+            placeholder="Pesquisar..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
         {goalData && (
           <>
@@ -79,9 +93,15 @@ export default function AdminPage() {
             </div>
           </>
         )}
-        {profiles.map((profile) => (
-          <UserProfile key={profile.id} user={profile} />
-        ))}
+        {filteredProfiles.length > 0 ? (
+          filteredProfiles.map((profile) => (
+            <UserProfile key={profile.id} user={profile} />
+          ))
+        ) : (
+          <div>
+            <span>Nenhuma usuário cadastrado...</span>
+          </div>
+        )}
       </div>
     </div>
   );

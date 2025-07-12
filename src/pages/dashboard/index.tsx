@@ -70,6 +70,7 @@ export default function Dashboard() {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen w-full flex flex-col  items-center px-4 py-8">
       <div className="space-y-2 w-full max-w-5xl">
