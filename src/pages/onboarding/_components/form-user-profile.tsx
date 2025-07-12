@@ -77,7 +77,7 @@ export function FormUserProfile() {
         {
           profileid: user.id,
           quantity: quantity,
-          value: TOTAL_PRICE / quantity,
+          value: Number((TOTAL_PRICE / quantity).toFixed(2)),
         }
       );
 
