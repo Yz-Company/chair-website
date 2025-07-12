@@ -13,18 +13,22 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "../../../utils/supabase";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import type { CardInstallmet } from "../models/card-installment";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
 
-interface FormUserProfileProps {
-  installment: CardInstallmet;
-}
-
-export default function FormUserProfile({ installment }: FormUserProfileProps) {
+export function FormUserProfile() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const TOTAL_PRICE = 300;
 
   useEffect(() => {
     const getSession = async () => {
@@ -72,8 +76,8 @@ export default function FormUserProfile({ installment }: FormUserProfileProps) {
         "insert_installments",
         {
           profileid: user.id,
-          quantity: installment.quantity,
-          value: installment.price,
+          quantity: quantity,
+          value: TOTAL_PRICE / quantity,
         }
       );
 
@@ -136,6 +140,31 @@ export default function FormUserProfile({ installment }: FormUserProfileProps) {
                 placeholder="(XX) XXXXX-XXXX"
                 onChange={(e) => applyMask(e.target.value)}
               />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="phone">Parcelas</Label>
+              <Select onValueChange={(value) => setQuantity(Number(value))}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione a quantidade" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {[...Array(10)].map((_, index) => {
+                    const parcelas = index + 1;
+                    const valorParcela = TOTAL_PRICE / parcelas;
+                    const valorFormatado = new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(valorParcela);
+
+                    return (
+                      <SelectItem key={parcelas} value={parcelas.toString()}>
+                        {parcelas}x {valorFormatado}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
             <Button
               disabled={!(name && phone) || loading}
