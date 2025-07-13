@@ -143,7 +143,10 @@ export function FormUserProfile() {
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="phone">Parcelas</Label>
-              <Select onValueChange={(value) => setQuantity(Number(value))}>
+              <Select
+                onValueChange={(value) => setQuantity(Number(value))}
+                value={quantity.toString()}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecione a quantidade" />
                 </SelectTrigger>

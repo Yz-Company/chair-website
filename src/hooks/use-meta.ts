@@ -44,7 +44,8 @@ export const useMeta = () => {
 
     const { error } = await supabase
       .from("meta")
-      .update({ current_amount: amount + goalData.currentAmount });
+      .update({ current_amount: amount + goalData.currentAmount })
+      .eq("id", goalData.id);
 
     if (error) {
       throw new Error("Erro ao atualizar meta");
@@ -60,7 +61,8 @@ export const useMeta = () => {
 
     const { error } = await supabase
       .from("meta")
-      .update({ current_amount: goalData.currentAmount - amount });
+      .update({ current_amount: goalData.currentAmount - amount })
+      .eq("id", goalData.id);
 
     if (error) {
       throw new Error("Erro ao atualizar meta");

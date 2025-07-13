@@ -14,6 +14,7 @@ import type { InstallMent } from "../../../models/installment";
 import { useState } from "react";
 import { supabase } from "../../../utils/supabase";
 import { toast } from "sonner";
+import { useMeta } from "../../../hooks/use-meta";
 
 interface DialogVerifyInstallmentProps {
   installment: InstallMent;
@@ -23,6 +24,7 @@ export default function DialogVerifyInstallment({
   installment,
 }: DialogVerifyInstallmentProps) {
   const [loading, setLoading] = useState(false);
+  const { updateMetaUp, updateMetaDown } = useMeta();
 
   const handleApproveInstallment = async () => {
     setLoading(true);
@@ -35,6 +37,9 @@ export default function DialogVerifyInstallment({
       if (error) {
         throw new Error("Erro ao aprovar carnê");
       }
+
+      updateMetaUp(installment.amount);
+
       toast.success("Carnê aprovado");
     } catch (error) {
       console.log(error);
@@ -55,6 +60,9 @@ export default function DialogVerifyInstallment({
       if (error) {
         throw new Error("Erro ao desaprovar carnê");
       }
+
+      updateMetaDown(installment.amount);
+
       toast.success("Carnê marcado como desaprovado");
     } catch (error) {
       console.log(error);

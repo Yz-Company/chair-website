@@ -31,6 +31,7 @@ export default function DialogPayInstallmet({
 }: DialogPayInstallmetProps) {
   const PIX = "07925542000114";
   const [isCopy, setIsCopy] = useState(false);
+  const [open, setOpen] = useState(false);
 
   function handleCopyPix() {
     navigator.clipboard
@@ -100,14 +101,14 @@ export default function DialogPayInstallmet({
       }
 
       toast.success("Carnê atualizado para pago!");
+      setOpen(false);
     } catch (error) {
-      console.log(error);
       toast.error("Erro ao atualizar carnê");
     }
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           className={cn(
