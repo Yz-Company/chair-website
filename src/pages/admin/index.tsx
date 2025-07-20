@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Profile } from "../../models/profile";
 import { supabase } from "../../utils/supabase";
-import { Loader } from "lucide-react";
+import { Loader, Plus } from "lucide-react";
 import UserProfile from "./_components/user-profile";
 import { useMeta } from "../../hooks/use-meta";
 import { Input } from "../../components/ui/input";
+import { DialogCreateProfile } from "./_components/dialog-create-profile";
+import { Button } from "../../components/ui/button";
 
 export default function AdminPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -31,6 +33,24 @@ export default function AdminPage() {
     getProfiles();
   }, []);
 
+  useEffect(() => {
+    const databaseChannel = supabase
+      .channel("database_inser_new_user")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "profiles" },
+        (payload) => {
+          const newProfile = payload.new as Profile;
+          setProfiles((prev) => [newProfile, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(databaseChannel);
+    };
+  }, []);
+
   // Filtrar os perfis
   const filteredProfiles = useMemo(() => {
     return profiles.filter((user) => {
@@ -51,12 +71,20 @@ export default function AdminPage() {
       <div className="space-y-4 w-full max-w-5xl">
         <div className="flex flex-col sm:flex-row items-center justify-between">
           <h1 className="font-semibold text-2xl">Usuários</h1>
-          <Input
-            className="w-96"
-            placeholder="Pesquisar..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <div className="flex items-center justify-center gap-2">
+            <Input
+              className="w-96"
+              placeholder="Pesquisar..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <DialogCreateProfile>
+              <Button>
+                <Plus className="size-3" />
+                <span className="hidden md:block">Criar usuário</span>
+              </Button>
+            </DialogCreateProfile>
+          </div>
         </div>
         {goalData && (
           <>

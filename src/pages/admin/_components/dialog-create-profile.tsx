@@ -1,18 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../components/ui/card";
-import { Input } from "../../../components/ui/input";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../../components/ui/dialog";
 import { Label } from "../../../components/ui/label";
-import { Button } from "../../../components/ui/button";
-import { Loader } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
-import { supabase } from "../../../utils/supabase";
-import { useNavigate } from "react-router";
-import { toast } from "sonner";
+import { Input } from "../../../components/ui/input";
+import { applyMask } from "../../../lib/apply-mask-phone";
 import {
   Select,
   SelectContent,
@@ -20,64 +17,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
-import { applyMask } from "../../../lib/apply-mask-phone";
+import { Button } from "../../../components/ui/button";
+import { Loader } from "lucide-react";
+import { supabase } from "../../../utils/supabase";
+import { toast } from "sonner";
+import type { Profile } from "../../../models/profile";
 
-export function FormUserProfile() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+export function DialogCreateProfile({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [chairQuantity, setChairQuantity] = useState(1);
   const [quantity, setQuantity] = useState(1);
-  const [chairAmount, setChairAmount] = useState(1);
   const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState(300);
+  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const getSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-
-      if (error) {
-        navigate("/", { replace: true });
-        return;
-      }
-
-      if (data.session?.user) {
-        setUser(data.session.user);
-      } else {
-        navigate("/", { replace: true });
-      }
-    };
-
-    getSession();
-  }, []);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     setLoading(true);
-
     try {
-      if (!user) return;
-
-      const updates = {
-        id: user.id,
-        username: name,
-        phone,
-        updated_at: new Date(),
-      };
-
-      const { error } = await supabase.from("profiles").upsert(updates);
+      // Create
+      const { error, data } = await supabase
+        .from("profiles")
+        .insert({ username: name, phone: phone })
+        .select();
 
       if (error) {
-        toast.error("Erro ao atualizar!");
+        toast.error("Erro ao criar usuário!");
         return;
       }
+
+      const newUser: Profile = data[0] as Profile;
 
       // Run create installments
       const { error: ErrorFunction } = await supabase.rpc(
         "insert_installments",
         {
-          profileid: user.id,
+          profileid: newUser.id,
           quantity: quantity,
           value: Number((price / quantity).toFixed(2)),
         }
@@ -88,29 +68,38 @@ export function FormUserProfile() {
         return;
       }
 
-      toast.success("Obrigado pela sua ajuda! 😊");
-      navigate("/dashboard", { replace: true });
+      toast.success("Usuário cadastrado com sucesso!");
+      setOpen(false); // fecha o modal
+
+      // resetar os estados
+      setName("");
+      setPhone("");
+      setChairQuantity(1);
+      setQuantity(1);
+      setPrice(300);
     } catch (error) {
       console.log(error);
-      toast.error("Erro ao salvar. Tenta novamente mais tarde!");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <Card className="w-full max-w-xl">
-      <CardHeader>
-        <CardTitle className="text-center">
-          Preencha as informações abaixo
-        </CardTitle>
-        <CardContent className="mt-4">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Criar usuário</DialogTitle>
+          <DialogDescription>Crie seus usuário manualmente</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div className="flex flex-col gap-2">
               <Label htmlFor="name">Nome</Label>
               <Input
                 id="name"
+                autoFocus
                 placeholder="Seu nome"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -133,14 +122,14 @@ export function FormUserProfile() {
                 id="quantityn"
                 placeholder="1"
                 type="number"
-                value={chairAmount}
+                value={chairQuantity}
                 min={1}
                 max={100}
                 onChange={(e) => {
                   const chairsQuantity =
                     Number(e.target.value) > 0 ? Number(e.target.value) : 1;
                   setPrice(300 * chairsQuantity);
-                  setChairAmount(chairsQuantity);
+                  setChairQuantity(chairsQuantity);
                 }}
               />
               <span className="text-xs font-light -mt-1">
@@ -184,8 +173,8 @@ export function FormUserProfile() {
               {loading ? <Loader className="animate-spin" /> : "Confirmar"}
             </Button>
           </form>
-        </CardContent>
-      </CardHeader>
-    </Card>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

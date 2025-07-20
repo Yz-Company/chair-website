@@ -32,6 +32,10 @@ export const useMeta = () => {
   }, []);
 
   const progressPercentage = () => {
+    if (goalData?.currentAmount === 0) {
+      return 0;
+    }
+
     if (goalData?.totalGoal && goalData.currentAmount) {
       return (goalData.currentAmount / goalData.totalGoal) * 100;
     }

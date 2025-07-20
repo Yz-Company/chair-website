@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import type { InstallMent } from "../../../models/installment";
 import { supabase } from "../../../utils/supabase";
 import { useNavigate, useParams } from "react-router";
-import { ArrowLeft, Loader } from "lucide-react";
+import { ArrowLeft, Loader, Trash } from "lucide-react";
 import CardInstallment from "../_components/card-installment";
 import { type Profile } from "../../../models/profile";
 import { Button } from "../../../components/ui/button";
+import DialogDeleteProfile from "../_components/dialog-delete-profile";
 
 export default function UserPage() {
   const navigate = useNavigate();
@@ -85,9 +86,18 @@ export default function UserPage() {
   return (
     <div className="min-h-screen w-full flex flex-col  items-center px-4 py-8">
       <div className="space-y-4 w-full max-w-5xl">
-        <Button size="icon" variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft />
-        </Button>
+        <div className="flex items-center justify-between">
+          <Button size="icon" variant="outline" onClick={() => navigate(-1)}>
+            <ArrowLeft />
+          </Button>
+
+          <DialogDeleteProfile profile={profile}>
+            <Button variant="destructive">
+              <Trash className="size-4" />
+              <span>Deletar</span>
+            </Button>
+          </DialogDeleteProfile>
+        </div>
         <div className="flex flex-col">
           <h3 className="font-semibold"> {profile?.username} </h3>
           <span> {profile?.phone} </span>
