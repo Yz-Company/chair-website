@@ -25,8 +25,10 @@ import type { Profile } from "../../../models/profile";
 
 export function DialogCreateProfile({
   children,
+  cb,
 }: {
   children: React.ReactNode;
+  cb: () => void;
 }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -72,6 +74,7 @@ export function DialogCreateProfile({
       setOpen(false); // fecha o modal
 
       // resetar os estados
+      cb();
       setName("");
       setPhone("");
       setChairQuantity(1);
