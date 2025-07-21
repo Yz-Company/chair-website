@@ -41,13 +41,18 @@ export default function AdminPage() {
         { event: "INSERT", schema: "public", table: "profiles" },
         (payload) => {
           const newProfile = payload.new as Profile;
-          setProfiles((prev) => [newProfile, ...prev]);
+
+          // Previne perfis duplicados
+          setProfiles((prev) => {
+            const exists = prev.some((p) => p.id === newProfile.id);
+            return exists ? prev : [newProfile, ...prev];
+          });
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(databaseChannel);
+      databaseChannel.unsubscribe(); // <- mais seguro que removeChannel
     };
   }, []);
 
