@@ -28,7 +28,7 @@ export function FormUserProfile() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [chairAmount, setChairAmount] = useState(1);
+  const [_, setChairAmount] = useState(1);
   const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState(300);
 
