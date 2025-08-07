@@ -33,28 +33,28 @@ export default function AdminPage() {
     getProfiles();
   }, []);
 
-  // useEffect(() => {
-  //   const databaseChannel = supabase
-  //     .channel("database_inser_new_user")
-  //     .on(
-  //       "postgres_changes",
-  //       { event: "INSERT", schema: "public", table: "profiles" },
-  //       (payload) => {
-  //         const newProfile = payload.new as Profile;
+  useEffect(() => {
+    const databaseChannel = supabase
+      .channel("database_inser_new_user")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "profiles" },
+        (payload) => {
+          const newProfile = payload.new as Profile;
 
-  //         // Previne perfis duplicados
-  //         setProfiles((prev) => {
-  //           const exists = prev.some((p) => p.id === newProfile.id);
-  //           return exists ? prev : [newProfile, ...prev];
-  //         });
-  //       }
-  //     )
-  //     .subscribe();
+          // Previne perfis duplicados
+          setProfiles((prev) => {
+            const exists = prev.some((p) => p.id === newProfile.id);
+            return exists ? prev : [newProfile, ...prev];
+          });
+        }
+      )
+      .subscribe();
 
-  //   return () => {
-  //     databaseChannel.unsubscribe(); // <- mais seguro que removeChannel
-  //   };
-  // }, []);
+    return () => {
+      databaseChannel.unsubscribe(); // <- mais seguro que removeChannel
+    };
+  }, []);
 
   // Filtrar os perfis
 
@@ -84,7 +84,7 @@ export default function AdminPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <DialogCreateProfile cb={getProfiles}>
+            <DialogCreateProfile>
               <Button>
                 <Plus className="size-3" />
                 <span className="hidden md:block">Criar usuário</span>

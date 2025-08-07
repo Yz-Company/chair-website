@@ -133,12 +133,10 @@ export function FormUserProfile() {
                 id="quantityn"
                 placeholder="1"
                 type="number"
-                value={chairAmount}
-                min={1}
+                min={0}
                 max={100}
                 onChange={(e) => {
-                  const chairsQuantity =
-                    Number(e.target.value) > 0 ? Number(e.target.value) : 1;
+                  const chairsQuantity = Number(e.target.value);
                   setPrice(300 * chairsQuantity);
                   setChairAmount(chairsQuantity);
                 }}
