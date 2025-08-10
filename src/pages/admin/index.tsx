@@ -7,11 +7,17 @@ import { useMeta } from "../../hooks/use-meta";
 import { Input } from "../../components/ui/input";
 import { DialogCreateProfile } from "./_components/dialog-create-profile";
 import { Button } from "../../components/ui/button";
+import { TabsAdmin, type Tabs } from "./_components/tabs";
+import { PlusDonations } from "./_components/plus-donations";
+import { type Donations } from "../../models/donations";
+import { DonationItem } from "./_components/donations-item";
 
 export default function AdminPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [donations, setDonations] = useState<Donations[]>([]);
   const [loading, setLoading] = useState(true);
   const { goalData, progressPercentage } = useMeta();
+  const [tab, setTab] = useState<Tabs>("profiles");
   const [search, setSearch] = useState("");
 
   const getProfiles = async () => {
@@ -26,15 +32,38 @@ export default function AdminPage() {
     }
 
     setProfiles(data as Profile[]);
-    setLoading(false);
   };
 
+  const getDonations = async () => {
+    const { error, data } = await supabase
+      .from("donations")
+      .select()
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.log("Erro ao buscar doações", error);
+      return;
+    }
+
+    console.log(data);
+
+    setDonations(data as Donations[]);
+  };
+
+  async function fetchData() {
+    const profilesDataPromise = getProfiles();
+    const donationsDataPromise = getDonations();
+
+    await Promise.all([profilesDataPromise, donationsDataPromise]);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    getProfiles();
+    fetchData();
   }, []);
 
   useEffect(() => {
-    const databaseChannel = supabase
+    const databaseProfileChannel = supabase
       .channel("database_inser_new_user")
       .on(
         "postgres_changes",
@@ -51,8 +80,26 @@ export default function AdminPage() {
       )
       .subscribe();
 
+    const databaseDonationsChannel = supabase
+      .channel("database_inser_new_donations")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "donations" },
+        (payload) => {
+          const newDonations = payload.new as Donations;
+
+          // Previne perfis duplicados
+          setDonations((prev) => {
+            const exists = prev.some((p) => p.id === newDonations.id);
+            return exists ? prev : [...prev, newDonations];
+          });
+        }
+      )
+      .subscribe();
+
     return () => {
-      databaseChannel.unsubscribe(); // <- mais seguro que removeChannel
+      databaseProfileChannel.unsubscribe(); // <- mais seguro que removeChannel
+      databaseDonationsChannel.unsubscribe(); // <- mais seguro que removeChannel
     };
   }, []);
 
@@ -75,15 +122,16 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen w-full flex flex-col items-center px-4 py-8">
       <div className="space-y-4 w-full max-w-5xl">
-        <div className="flex flex-col sm:flex-row items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <h1 className="font-semibold text-2xl">Usuários</h1>
           <div className="flex items-center justify-center gap-2">
             <Input
-              className="w-96"
+              className="w-64"
               placeholder="Pesquisar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+
             <DialogCreateProfile>
               <Button>
                 <Plus className="size-3" />
@@ -127,16 +175,31 @@ export default function AdminPage() {
             </div>
           </>
         )}
-        {filteredProfiles.length > 0 ? (
-          filteredProfiles.map((profile) => (
-            <UserProfile key={profile.id} user={profile} />
-          ))
+
+        {/* Tabs */}
+        <TabsAdmin tabSelected={tab} setTab={setTab} />
+        {/* Lista de usuários */}
+        {tab === "profiles" ? (
+          filteredProfiles.length > 0 ? (
+            filteredProfiles.map((profile) => (
+              <UserProfile key={profile.id} user={profile} />
+            ))
+          ) : (
+            <div>
+              <span>Nenhuma usuário cadastrado...</span>
+            </div>
+          )
         ) : (
-          <div>
-            <span>Nenhuma usuário cadastrado...</span>
-          </div>
+          donations.map((donation) => (
+            <DonationItem
+              key={donation.id}
+              donation={donation}
+              fetchDonations={getDonations}
+            />
+          ))
         )}
       </div>
+      <PlusDonations />
     </div>
   );
 }

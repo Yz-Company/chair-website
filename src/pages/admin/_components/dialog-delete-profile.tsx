@@ -27,6 +27,7 @@ export default function DialogDeleteProfile({
 }: DialogDeleteProfileProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+
   const handleDeleteProfile = async () => {
     if (!profile) return;
 
