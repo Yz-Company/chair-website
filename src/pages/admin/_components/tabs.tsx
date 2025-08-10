@@ -21,7 +21,7 @@ const tabButtons = [
 export function TabsAdmin({ tabSelected, setTab }: Props) {
   return (
     <div className="flex items-center gap-4">
-      {tabButtons.map((item, index) => (
+      {tabButtons.map((item) => (
         <button
           key={item["tab"]}
           onClick={() => setTab(item.tab as Tabs)}
